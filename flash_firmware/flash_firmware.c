@@ -4,6 +4,7 @@
 #include "hardware/flash.h"
 #include "cyw43.h"
 #include "cyw43_firmware_defs.h"
+#include "cyw43_flash_firmware_defs.h"
 
 #define ALIGN_UINT(val, align) (((val) + (align) - 1) & ~((align) - 1))
 
@@ -65,7 +66,7 @@ int main() {
     printf("total size %lu bytes\n", total_len_bytes);
     printf("total pages %lu\n", total_pages);
     printf("total sectors %lu\n", total_sectors);
-    printf("#define CYW43_FIRMWARE_FLASH_BLOCK 0x%x\n", flash_offset / FLASH_PAGE_SIZE);
+    printf("#define CYW43_FIRMWARE_FLASH_PAGE 0x%x\n", flash_offset / FLASH_PAGE_SIZE);
 
     // Erase flash
     flash_range_erase(flash_offset, total_sectors * FLASH_SECTOR_SIZE);

@@ -12,4 +12,7 @@ target_link_libraries(flash_firmware_cyw43 PRIVATE
 target_compile_definitions(flash_firmware_cyw43 PRIVATE
     CYW43_LWIP=0
 )
+target_include_directories(flash_firmware_cyw43 PRIVATE
+    include
+)
 pico_add_extra_outputs(flash_firmware_cyw43)
