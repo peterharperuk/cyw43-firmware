@@ -24,7 +24,7 @@ static const cyw43_firmware_details_t* cyw43_flash_firmware_details_func(void) {
             details.clm_len = flash_details->clm_len;
             details.wifi_nvram_len = flash_details->wifi_nvram_len;
             details.wifi_fw_addr = (const uint8_t*)flash_details->xip_flash_offset;
-            details.clm_addr = details.wifi_fw_addr + ALIGN_UINT(flash_details->wifi_fw_len, CYW43_FLASH_BLOCK_SIZE);
+            details.clm_addr = details.wifi_fw_addr + ALIGN_UINT(flash_details->wifi_fw_len, 512); // clm always padded to 512 for some reason?
             details.wifi_nvram_addr = details.wifi_fw_addr + ALIGN_UINT(flash_details->raw_wifi_fw_len, FLASH_PAGE_SIZE);
             #if CYW43_ENABLE_BLUETOOTH
             details.raw_bt_fw_len = flash_details->raw_bt_fw_len;

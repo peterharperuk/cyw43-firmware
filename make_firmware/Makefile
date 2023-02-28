@@ -27,6 +27,8 @@ A1_FIRMWARE_COMBINED=w4343WA1_7_45_98_50_combined
 NVRAM_1DX=wifi_nvram_1dx
 NVRAM_PICO=wifi_nvram_43439
 
+TGZIP_BIN_NAME=tgzip.out
+
 RESULT_LIST = \
 	$(LAUNCH_FIRMWARE_COMBINED).h \
 	$(LAUNCH_FIRMWARE_COMBINED).gz.h \
@@ -119,11 +121,11 @@ $(NVRAM_PICO).gz.postmeta.h : $(NVRAM_PICO).gz.premeta.h
 	$(call add_nvram_meta,$(subst .gz.postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
 
 # Generate the combined wb firmware
-$(WB_FIRMWARE_COMBINED).raw : $(WIFI_LATEST_FW_NAME).pad256 $(CLM_NAME)
+$(WB_FIRMWARE_COMBINED).raw : $(WIFI_LATEST_FW_NAME).pad512 $(CLM_NAME)
 	cat $^ > $@
 
 # Generate the combined launch firmware
-$(LAUNCH_FIRMWARE_COMBINED).raw : $(WIFI_LAUNCH_FW_NAME).pad256 $(CLM_NAME)
+$(LAUNCH_FIRMWARE_COMBINED).raw : $(WIFI_LAUNCH_FW_NAME).pad512 $(CLM_NAME)
 	cat $^ > $@
 
 # Generate the combined a1 firmware
@@ -146,8 +148,8 @@ wifi_nvram_%.raw : nvram_settings/wifi_nvram_%.raw
 	dd if=/dev/zero of=$@ bs=1 count=1 seek=$$(( ($$(stat -c %s $<) / 256) * 256 + 256 - 1))
 
 # Compress a "raw" file
-%.gz : %.raw
-	cat $< | gzip -c - > $@
+%.gz : %.raw $(TGZIP_BIN_NAME)
+	./$(TGZIP_BIN_NAME) $< $@
 
 # Generate a compressed header file
 %.gz.premeta.h : %.gz
@@ -168,18 +170,33 @@ $(BT_A1_FW_NAME).raw : a1_firmware/$(BT_A1_FW_NAME).raw
 # Generate a program that outputs the bytes required for the bt firmware
 $(BT_FW_BIN_NAME): bt_firmware/main.c bt_firmware/$(BT_FW_SRC)
 	$(info *** generating: $@)
-	gcc $^ -o $@
+	$(CC) $^ -o $@
+
+tinf_objects = tinflate.o tinfgzip.o tinfzlib.o adler32.o crc32.o \
+    defl_static.o genlz77.o
+
+libtinf.a: $(tinf_objects)
+	$(RM) $@
+	$(AR) -frs $@ $^
+	ranlib $@
+
+%.o : $(PICO_SDK_PATH)/lib/uzlib/src/%.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(TGZIP_BIN_NAME): tgzip/tgzip.c libtinf.a
+	$(CC) $^ -I $(PICO_SDK_PATH)/lib/uzlib/src -o $@
 
 .PHONY : clean cleanjunk
 cleanjunk :
-	@rm -f \
+	$(RM) \
 		$(BT_FW_BIN_NAME) $(BT_FW_NAME) $(BT_A1_FW_NAME) \
 		$(shell find . -name "*.pad512") $(shell find . -name "*.pad256") \
 		*.raw *.gz \
 		*_combined \
-		*.postmeta.h *.premeta.h
+		*.postmeta.h *.premeta.h \
+		*.o *.a $(TGZIP_BIN_NAME)
 
 clean: cleanjunk
-	@rm -f \
+	$(RM) \
 		$(BT_FW_NAME).h $(BT_FW_NAME).gz.h  $(BT_A1_FW_NAME).h $(BT_A1_FW_NAME).gz.h \
 		$(shell find . -name "*_combined.h") $(shell find . -name "*_combined.gz.h")
