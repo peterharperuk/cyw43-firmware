@@ -59,6 +59,7 @@ define add_wifi_meta
 	@echo \#define CYW43_CLM_LEN \($$(stat -c %s $(2))\) // $(2)>>$(3).postmeta.h
 	@echo \#define CYW43_WIFI_FW_ADDR \($(subst .,_,$(3))\)>>$(3).postmeta.h
 	@echo \#define CYW43_RAW_WIFI_FW_LEN \($(subst .,_,$(3))_len\)>>$(3).postmeta.h
+	@echo const uintptr_t fw_data = \(uintptr_t\)CYW43_WIFI_FW_ADDR\;>>$(3).postmeta.h
 endef
 
 #1: bt fw binary
@@ -158,8 +159,7 @@ wifi_nvram_%.raw : nvram_settings/wifi_nvram_%.raw
 # Generate a header file from a "raw" file
 %.premeta.h : %.raw
 	cp $< $(basename $<)
-	xxd -i $(basename $<) | sed 's/^unsigned/static const unsigned/' > $@
-
+	xxd -i $(basename $<) | sed 's/^unsigned/static const unsigned/' | sed 's/\[\] = {/\[\] __attribute__((aligned(4))) = {/' > $@
 # Run the fw binary to get a raw binary dump of the bt firmware
 $(BT_FW_NAME).raw : $(BT_FW_BIN_NAME)
 	./$< | xxd -r -p > $@
