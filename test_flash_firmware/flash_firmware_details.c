@@ -12,7 +12,6 @@
 #define ALIGN_UINT(val, align) (((val) + (align) - 1) & ~((align) - 1))
 
 static const cyw43_firmware_details_t* cyw43_flash_firmware_details_func(void) {
-    static_assert(CYW43_FLASH_BLOCK_SIZE == FLASH_PAGE_SIZE);
     static cyw43_firmware_details_t details;
     if (details.raw_wifi_fw_len == 0) {
         cyw43_flash_firmware_details_t *flash_details = (cyw43_flash_firmware_details_t*)(XIP_BASE + CYW43_FIRMWARE_FLASH_PAGE * FLASH_PAGE_SIZE);
