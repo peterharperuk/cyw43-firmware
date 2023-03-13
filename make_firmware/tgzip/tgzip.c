@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     if (argc < 3)
     {
        printf(
-          "Syntax: tgunzip <source> <destination>\n\n"
+          "Syntax: tgzip <source> <destination>\n\n"
           "Both input and output are kept in memory, so do not use this on huge files.\n");
 
        return 1;
