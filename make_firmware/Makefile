@@ -28,6 +28,7 @@ NVRAM_1DX=wifi_nvram_1dx
 NVRAM_PICO=wifi_nvram_43439
 
 TGZIP_BIN_NAME=tgzip.out
+MINIZ_BIN_NAME=miniz/bin/miniz_gzip
 
 RESULT_LIST = \
 	$(LAUNCH_FIRMWARE_COMBINED).h \
@@ -149,8 +150,8 @@ wifi_nvram_%.raw : nvram_settings/wifi_nvram_%.raw
 	dd if=/dev/zero of=$@ bs=1 count=1 seek=$$(( ($$(stat -c %s $<) / 256) * 256 + 256 - 1))
 
 # Compress a "raw" file
-%.gz : %.raw $(TGZIP_BIN_NAME)
-	./$(TGZIP_BIN_NAME) $< $@
+%.gz : %.raw $(MINIZ_BIN_NAME)
+	./$(MINIZ_BIN_NAME) $< $@
 
 # Generate a compressed header file
 %.gz.premeta.h : %.gz
@@ -186,6 +187,11 @@ libtinf.a: $(tinf_objects)
 
 $(TGZIP_BIN_NAME): tgzip/tgzip.c libtinf.a
 	$(CC) $^ -I $(PICO_SDK_PATH)/lib/uzlib/src -o $@
+
+$(MINIZ_BIN_NAME): miniz/CMakeLists.txt
+	mkdir -p build
+	cmake -B build -S miniz
+	make -C build
 
 .PHONY : clean cleanjunk
 cleanjunk :
