@@ -159,7 +159,7 @@ wifi_nvram_%.raw : nvram_settings/wifi_nvram_%.raw
 # Generate a header file from a "raw" file
 %.premeta.h : %.raw
 	cp $< $(basename $<)
-	xxd -i $(basename $<) | sed 's/^unsigned/static const unsigned/' | sed 's/\[\] = {/\[\] __attribute__((aligned(4))) = {/' > $@
+	xxd -i $(basename $<) | sed 's/^unsigned/static const unsigned/' | sed 's/\[\] = {/\[\] CYW43_RESOURCE_ATTRIBUTE = {/' > $@
 # Run the fw binary to get a raw binary dump of the bt firmware
 $(BT_FW_NAME).raw : $(BT_FW_BIN_NAME)
 	./$< | xxd -r -p > $@
