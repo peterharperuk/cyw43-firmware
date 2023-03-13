@@ -4,7 +4,6 @@ add_executable(flash_firmware_cyw43
 target_link_libraries(flash_firmware_cyw43 PRIVATE
     pico_stdlib
     pico_cyw43_driver_headers
-    pico_btstack_base_headers
     pico_btstack_flash_bank_headers
     pico_btstack_hci_transport_cyw43_headers
     hardware_flash
