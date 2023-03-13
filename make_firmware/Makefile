@@ -66,7 +66,7 @@ endef
 #1: bt fw binary
 #2: result name
 define add_bt_meta
-	cp $(2).premeta.h $(2).postmeta.h
+	cp $(2).btpremeta.h $(2).postmeta.h
 	@echo \#define CYW43_BT_FW_LEN \($$(stat -c %s $(1))\)>>$(2).postmeta.h
 	@echo \#define CYW43_BT_FW_ADDR \($(subst .,_,$(2))\)>>$(2).postmeta.h
 	@echo \#define CYW43_RAW_BT_FW_LEN \($(subst .,_,$(2))_len\)>>$(2).postmeta.h
@@ -104,16 +104,16 @@ $(A1_FIRMWARE_COMBINED).postmeta.h : $(A1_FIRMWARE_COMBINED).premeta.h
 $(A1_FIRMWARE_COMBINED).gz.postmeta.h : $(A1_FIRMWARE_COMBINED).gz.premeta.h
 	$(call add_wifi_meta,$(WIFI_A1_FW_NAME),$(CLM_A1_NAME),$(subst .postmeta.h,,$@))
 
-$(BT_FW_NAME).postmeta.h: $(BT_FW_NAME).premeta.h
+$(BT_FW_NAME).postmeta.h: $(BT_FW_NAME).btpremeta.h
 	$(call add_bt_meta,$(subst .postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
 
-$(BT_FW_NAME).gz.postmeta.h: $(BT_FW_NAME).gz.premeta.h
+$(BT_FW_NAME).gz.postmeta.h: $(BT_FW_NAME).gz.btpremeta.h
 	$(call add_bt_meta,$(subst .gz.postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
 
-$(BT_A1_FW_NAME).postmeta.h: $(BT_A1_FW_NAME).premeta.h
+$(BT_A1_FW_NAME).postmeta.h: $(BT_A1_FW_NAME).btpremeta.h
 	$(call add_bt_meta,$(subst .postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
 
-$(BT_A1_FW_NAME).gz.postmeta.h : $(BT_A1_FW_NAME).gz.premeta.h
+$(BT_A1_FW_NAME).gz.postmeta.h : $(BT_A1_FW_NAME).gz.btpremeta.h
 	$(call add_bt_meta,$(subst .gz.postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
 
 $(NVRAM_1DX).gz.postmeta.h : $(NVRAM_1DX).gz.premeta.h
@@ -155,12 +155,21 @@ wifi_nvram_%.raw : nvram_settings/wifi_nvram_%.raw
 
 # Generate a compressed header file
 %.gz.premeta.h : %.gz
-	xxd -i $< | sed 's/^unsigned/static const unsigned/' > $@
+	xxd -i $< | sed 's/^unsigned/static const unsigned/' | sed 's/\[\] = {/\[\] CYW43_RESOURCE_ATTRIBUTE = {/' > $@
 
 # Generate a header file from a "raw" file
 %.premeta.h : %.raw
 	cp $< $(basename $<)
 	xxd -i $(basename $<) | sed 's/^unsigned/static const unsigned/' | sed 's/\[\] = {/\[\] CYW43_RESOURCE_ATTRIBUTE = {/' > $@
+
+# Generate a compressed header file
+%.gz.btpremeta.h : %.gz
+	xxd -i $< | sed 's/^unsigned/const unsigned/' | sed 's/\[\] = {/\[\] CYW43_RESOURCE_ATTRIBUTE = {/' > $@
+
+# Generate a header file from a "raw" file
+%.btpremeta.h : %.raw
+	cp $< $(basename $<)
+	xxd -i $(basename $<) | sed 's/^unsigned/const unsigned/' | sed 's/\[\] = {/\[\] CYW43_RESOURCE_ATTRIBUTE = {/' > $@
 
 # Run the fw binary to get a raw binary dump of the bt firmware
 $(BT_FW_NAME).raw : $(BT_FW_BIN_NAME)
@@ -200,7 +209,7 @@ cleanjunk :
 		$(shell find . -name "*.pad512") $(shell find . -name "*.pad256") \
 		*.raw *.gz \
 		*_combined \
-		*.postmeta.h *.premeta.h \
+		*.postmeta.h *.premeta.h *.btpremeta.h \
 		*.o *.a $(TGZIP_BIN_NAME)
 
 clean: cleanjunk
