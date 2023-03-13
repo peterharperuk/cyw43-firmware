@@ -1,0 +1,3 @@
+[submodule "make_firmware/miniz"]
+	path = make_firmware/miniz
+	url = https://github.com/peterharperuk/miniz.git
