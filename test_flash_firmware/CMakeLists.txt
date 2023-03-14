@@ -10,8 +10,7 @@ target_link_libraries(test_flash_firmware_cyw43 PRIVATE
     pico_cyw43_arch_none
     )
 target_compile_definitions(test_flash_firmware_cyw43 PRIVATE
-    CYW43_FIRMWARE_FLASH_PAGE=0x1d20 # compressed:Run flash_firmware to get this
-    #CYW43_FIRMWARE_FLASH_PAGE=0x1c30 # uncompressed
+    CYW43_FIRMWARE_FLASH_PAGE=0x1d80
     cyw43_get_firmware_funcs=cyw43_get_firmware_funcs_flash # Comment this out to embed firmware in the binary
     CYW43_LWIP=0
 )
