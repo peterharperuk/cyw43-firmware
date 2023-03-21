@@ -41,13 +41,9 @@ static const cyw43_firmware_details_t* cyw43_flash_firmware_details_func(void) {
 const cyw43_firmware_funcs_t *cyw43_get_firmware_funcs_flash(void) {
     static const cyw43_firmware_funcs_t funcs = {
         .firmware_details = cyw43_flash_firmware_details_func,
-        .start_wifi_fw = cyw43_start_compressed_wifi_firmware,
-        .start_bt_fw = cyw43_start_compressed_bt_firmware,
-        .get_wifi_fw = cyw43_read_compressed_firmware,
-        .get_bt_fw = cyw43_read_compressed_firmware,
-        .get_nvram = cyw43_read_uncompressed_firmware, // never compressed
-        .get_clm = cyw43_read_compressed_firmware,
-        .end = cyw43_end_compressed_firmware,
+        .start_fw_stream = cyw43_start_compressed_firmware,
+        .stream_fw = cyw43_read_compressed_firmware,
+        .end_fw_stream = cyw43_end_compressed_firmware,
     };
     return &funcs;
 }
@@ -55,13 +51,9 @@ const cyw43_firmware_funcs_t *cyw43_get_firmware_funcs_flash(void) {
 const cyw43_firmware_funcs_t *cyw43_get_firmware_funcs_flash(void) {
     static const cyw43_firmware_funcs_t funcs = {
         .firmware_details = cyw43_flash_firmware_details_func,
-        .start_wifi_fw = NULL,
-        .start_bt_fw = NULL,
-        .get_wifi_fw = cyw43_read_uncompressed_firmware,
-        .get_bt_fw = cyw43_read_uncompressed_firmware,
-        .get_nvram = cyw43_read_uncompressed_firmware,
-        .get_clm = cyw43_read_uncompressed_firmware,
-        .end = NULL,
+        .start_fw_stream = cyw43_start_uncompressed_firmware,
+        .stream_fw = cyw43_read_uncompressed_firmware,
+        .end_fw_stream = cyw43_end_uncompressed_firmware,
     };
     return &funcs;
 }
