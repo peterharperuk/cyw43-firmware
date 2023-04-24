@@ -211,6 +211,7 @@ cleanjunk :
 		*_combined \
 		*.postmeta.h *.premeta.h *.btpremeta.h \
 		*.o *.a $(TGZIP_BIN_NAME)
+	$(RM) -fr build miniz/bin
 
 clean: cleanjunk
 	$(RM) \
