@@ -13,6 +13,10 @@ CLM_NAME=launch_tuning/43439_raspberrypi_picow_v5_220624.clm_blob
 BT_FW_BIN_NAME=bt_fw_processor.out
 BT_FW_NAME=cyw43_btfw_43439
 
+BT_FW_HCD_IN=CYW4343A2_001.003.016.0066.0000_Generic_SDIO_37_4MHz_wlbga_BU_dl_signed.hcd
+BT_FW_READ_HCD_BIN_NAME=read_hcd
+BT_FW_NAME_HCD=cyw43_btfw_43439_hcd
+
 # Filename for the combined firmware
 WB_FIRMWARE_COMBINED=wb43439A0_7_95_49_00_combined
 LAUNCH_FIRMWARE_COMBINED=w43439A0_7_95_49_00_combined
@@ -40,7 +44,9 @@ RESULT_LIST = \
 	$(BT_FW_NAME).h \
 	$(BT_FW_NAME).gz.h \
 	$(BT_A1_FW_NAME).h \
-	$(BT_A1_FW_NAME).gz.h
+	$(BT_A1_FW_NAME).gz.h \
+	$(BT_FW_NAME_HCD).h \
+	$(BT_FW_NAME_HCD).gz.h \
 
 # nvram data is not compressed
 # So it would be a bit of hassle to decompress to save one page?
@@ -108,6 +114,12 @@ $(BT_FW_NAME).postmeta.h: $(BT_FW_NAME).btpremeta.h
 	$(call add_bt_meta,$(subst .postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
 
 $(BT_FW_NAME).gz.postmeta.h: $(BT_FW_NAME).gz.btpremeta.h
+	$(call add_bt_meta,$(subst .gz.postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
+
+$(BT_FW_NAME_HCD).postmeta.h: $(BT_FW_NAME_HCD).btpremeta.h
+	$(call add_bt_meta,$(subst .postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
+
+$(BT_FW_NAME_HCD).gz.postmeta.h: $(BT_FW_NAME_HCD).gz.btpremeta.h
 	$(call add_bt_meta,$(subst .gz.postmeta.h,,$@).raw,$(subst .postmeta.h,,$@))
 
 $(BT_A1_FW_NAME).postmeta.h: $(BT_A1_FW_NAME).btpremeta.h
@@ -183,6 +195,14 @@ $(BT_FW_BIN_NAME): bt_firmware/main.c bt_firmware/$(BT_FW_SRC)
 	$(info *** generating: $@)
 	$(CC) $^ -o $@
 
+$(BT_FW_NAME_HCD).raw: $(BT_FW_READ_HCD_BIN_NAME) bt_firmware/$(BT_FW_HCD_IN)
+	./$(BT_FW_READ_HCD_BIN_NAME) bt_firmware/$(BT_FW_HCD_IN) | xxd -r -p - > $@
+
+# Converts a bt firmware in a binary HCD file into the format we expect
+$(BT_FW_READ_HCD_BIN_NAME): bt_firmware/read_hcd.c
+	$(info *** generating: $@)
+	$(CC) $^ -o $@
+
 tinf_objects = tinflate.o tinfgzip.o tinfzlib.o adler32.o crc32.o \
     defl_static.o genlz77.o
 
@@ -205,7 +225,7 @@ $(MINIZ_BIN_NAME): miniz/CMakeLists.txt
 .PHONY : clean cleanjunk
 cleanjunk :
 	$(RM) \
-		$(BT_FW_BIN_NAME) $(BT_FW_NAME) $(BT_A1_FW_NAME) \
+		$(BT_FW_BIN_NAME) $(BT_FW_NAME) $(BT_FW_NAME_HCD) $(BT_A1_FW_NAME) $(BT_FW_READ_HCD_BIN_NAME) \
 		$(shell find . -name "*.pad512") $(shell find . -name "*.pad256") \
 		*.raw *.gz \
 		*_combined \

@@ -96,10 +96,11 @@ int main() {
         dump_byte(type);
         pos += 2;
 
+        printf("\n");
         if (num_chars > 0) {
             for(int i = 0; i < num_chars; i++) {
                 uint32_t octet = read_hex(brcm_patchram_buf + pos, 2);
-                if (i % 16 == 0) {
+                if (i > 0 && i % 16 == 0) {
                     printf("\n");
                 }
                 dump_byte(octet);
