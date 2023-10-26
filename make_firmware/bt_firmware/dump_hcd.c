@@ -19,9 +19,11 @@ int main() {
         *buf++;
         printf("chars: %d\n", length - 4);
         uint16_t addr = *buf | *(buf+1)<<8;
+        uint16_t high_addr = *(buf+2) | *(buf+3)<<8;
         //assert(*(buf+2) == 0x21);
         //assert(*(buf+3) == 0);
         printf("addr: %04x\n", addr);
+        printf("high addr: %02x%02x\n", (high_addr >> 8) & 0xff, high_addr & 0xff);
         buf += length;
         records++;
     }

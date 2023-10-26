@@ -98,14 +98,22 @@ int main() {
         printf("type: %u\n", type);
         pos += 2;
 
-        if (num_chars > 0) {
-            for(int i = 0; i < num_chars; i++) {
-                uint32_t octet = read_hex(brcm_patchram_buf + pos, 2);
-                if (i % 16 == 0) {
-                    //printf("\n");
+        if (num_chars == 2 && type == 4) {
+            uint32_t octet1 = read_hex(brcm_patchram_buf + pos, 2);
+            pos += 2;
+            uint32_t octet2 = read_hex(brcm_patchram_buf + pos, 2);
+            pos += 2;
+            printf("high addr: %02x%02x\n", octet1, octet2);
+        } else {
+            if (num_chars > 0) {
+                for(int i = 0; i < num_chars; i++) {
+                    uint32_t octet = read_hex(brcm_patchram_buf + pos, 2);
+                    if (i % 16 == 0) {
+                        //printf("\n");
+                    }
+                    //dump_byte(octet);
+                    pos += 2;
                 }
-                //dump_byte(octet);
-                pos += 2;
             }
         }
         pos += 2; // ignored?

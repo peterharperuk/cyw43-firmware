@@ -101,13 +101,8 @@ int main(int argc, char *argv[]) {
     dump_byte((uint8_t)records);
     buf = buf_start;
 
-    // This puts the state machine into extended address mode?!
-    dump_byte(0x02); // chars
-    dump_byte(0x00); dump_byte(0x00); // address
-    dump_byte(0x04); // see BTFW_HEX_LINE_TYPE_EXTENDED_ADDRESS
-    dump_byte(0x00); dump_byte(0x21); // The "magic" high address?
-
     // Repeat for the data
+    uint16_t last_extended_address = 0;
     pos = 0;
     const size_t pos_end = buf_end - buf_start; 
     while(pos < pos_end) {
@@ -116,31 +111,45 @@ int main(int argc, char *argv[]) {
         pos += 1;
         assert(buf[pos] == 0xfc);
         pos += 1;
-        printf("\n");
+
+        uint32_t num_chars = buf[pos] - 4; // length include addr and extended addr?
+        assert(num_chars <= 0xff);
+        pos += 1;
+
+        uint32_t addr = buf[pos] | buf[pos+1]<<8;
+        pos += 2;
+
+        uint8_t type = 0;
+        uint16_t extended_addr = buf[pos] | buf[pos+1]<<8;
+        pos += 2;
 
         // This should be the end!
         if (hdr == 0x4e) {
-            assert(pos == pos_end - 5);
+            printf("\n");
+            assert(pos == pos_end);
             dump_byte(0x00); // chars
             dump_byte(0x00); dump_byte(0x00); // address
             dump_byte(0x01); // see BTFW_HEX_LINE_TYPE_END_OF_DATA
             break;
         }
-        uint32_t num_chars = buf[pos] - 4; // length include addr and mystery field?
-        assert(num_chars > 0);
 
-        assert(num_chars <= 0xff);
+        // Output an extended address field if needed
+        if (extended_addr != last_extended_address) {
+            last_extended_address = extended_addr;
+            printf("\n");
+            dump_byte(0x02); // chars
+            dump_byte(0x00); dump_byte(0x00); // address
+            dump_byte(0x04); // see BTFW_HEX_LINE_TYPE_EXTENDED_ADDRESS
+            printf("\n");
+            dump_byte((extended_addr >> 8) & 0xff);
+            dump_byte(extended_addr & 0xff);
+        }
+
+        printf("\n");
         dump_byte(num_chars);
-        pos += 1;
-
-        uint32_t addr = buf[pos] | buf[pos+1]<<8;
         dump_byte(addr >> 8);
         dump_byte(addr & 0xff);
-        pos += 2;
-
-        uint8_t type = 0;
         dump_byte(type);
-        pos += 2; // mystery field
 
         if (num_chars > 0) {
             for(int i = 0; i < num_chars; i++) {
@@ -153,6 +162,6 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-
+    printf("\n");
     return 0;
 }
